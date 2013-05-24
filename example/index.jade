@@ -1,0 +1,35 @@
+!!! 5
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    title AddThisShare Component Tests
+    link(rel='stylesheet', href='css/style.css', media='screen')
+    script(src='//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js')
+    script(src='../addThisShare.js')
+    script(src='javascript/test.js')
+  body
+    #micrositeContainer
+      #micrositeContainerInner
+        #micrositeContainerCompress
+          #micrositeHeader
+            h2 Header
+          #micrositeContent
+            #micrositeContentColumnFull
+
+              p: a#serviceMetaData(href="#") AddThis Service Metadata
+
+              table#serviceMetaDataTable
+                thead
+                  th #
+                  th Name
+                  th Code
+                  th(colspan="2") Icons
+                  th Endpoint
+
+            #micrositeContentColumnLeft
+              @Html.Ipsum.p(20, 10)
+            #micrositeContentColumnRight
+              @Html.Ipsum.p(10, 5)
+            div(style='clear: both;')
+          #micrositeFooter
+            h2 Footer
