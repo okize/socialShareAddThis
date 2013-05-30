@@ -23,6 +23,9 @@ default:
 	@echo "* compiling jade templates..."
 	@jade -P ./example/index.jade
 
+	@echo "* compiling sass..."
+	@sass --scss --compass --style expanded ./example/sass/style.scss ./example/css/style.css
+
 	@echo "* compiling coffeescript..."
 	@coffee -p ${SCRIPT_NAME}.coffee > ${SCRIPT_NAME}.js
 

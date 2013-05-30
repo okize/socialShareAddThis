@@ -4,20 +4,20 @@ $(document).on('ready', function() {
 
   $('body *').inlineIpsum({token: '@'});
 
-  $('#micrositeHeader').addThisShare({
+  $('#micrositeHeader').socialShareAddThis({
      addThisButtons: ['email', 'linkedin', 'facebook', 'twitter']
   });
 
-  $('#micrositeContentColumnFull').addThisShare({
+  $('#micrositeContentColumnFull').socialShareAddThis({
      addThisButtons: ['facebook', 'twitter', 'linkedin', 'email']
   });
 
   // no buttons
-  $('#micrositeFooter').addThisShare({
+  $('#micrositeFooter').socialShareAddThis({
      addThisButtons: []
   });
 
-  $('#micrositeContent').addThisShare({
+  $('#micrositeContent').socialShareAddThis({
     addThisButtons: ['email', 'linkedin', 'facebook', 'twitter', 'googleplus', 'addthis'],
     addThisButtonOrientation: 'vertical',
     addThisButtonSize: 'large',
