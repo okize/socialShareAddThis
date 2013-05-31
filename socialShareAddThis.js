@@ -24,14 +24,13 @@
       googleAnalyticsID: false
     };
     Share = (function() {
+      var addThisButtonHtml;
+
       function Share(element, options) {
         this.element = element;
-        this.element = element;
-        this.$el = $(this.element);
+        this.el = $(this.element);
         this.doc = $(window.document);
         this.options = $.extend({}, defaults, options);
-        this._defaults = defaults;
-        this._name = pluginName;
         this.addThisButtonsContainer = {};
         this.addThisButtonsContainerHeight = null;
         this.addThisButtonFollowLimit = null;
@@ -58,16 +57,15 @@
       }
 
       Share.prototype.init = function() {
-        var self;
+        var _this = this;
 
-        self = this;
         return $.when(this.loadAddthisScript(this.addThisScript)).then(function() {
-          self.isAddThisLoaded(true);
-          self.setAddThisConfiguration();
-          self.$el.append(self.buildAddThisHtml(self.options.addThisButtons));
-          self.addThisButtonsContainer.show();
-          if (self.options.addThisButtonFollow) {
-            return self.initializeFollow();
+          _this.isAddThisLoaded(true);
+          _this.setAddThisConfiguration();
+          _this.el.append(_this.buildAddThisHtml(_this.options.addThisButtons));
+          _this.addThisButtonsContainer.show();
+          if (_this.options.addThisButtonFollow) {
+            return _this.initializeFollow();
           }
         });
       };
@@ -84,9 +82,9 @@
       };
 
       Share.prototype.setAddThisConfiguration = function() {
-        if (this.isAddThisReady() === true && typeof window.addthis_config === 'undefined') {
+        if (typeof window.addthis_config === 'undefined' && this.isAddThisReady() === true) {
           window.addthis_config = this.addThisConfiguration;
-          return window.addthis_share = this.socialShareAddThisConfiguration;
+          window.addthis_share = this.socialShareAddThisConfiguration;
         }
       };
 
@@ -113,8 +111,23 @@
         }
       };
 
+      addThisButtonHtml = function(buttons, servicesMap) {
+        var html, i, len;
+
+        html = '';
+        i = 0;
+        len = buttons.length;
+        while (i < len) {
+          if (buttons[i] in servicesMap) {
+            html += '<a class="#{servicesMap[buttons[i]].className}" title="#{servicesMap[buttons[i]].title}" href="#"></a>';
+            i++;
+          }
+        }
+        return html;
+      };
+
       Share.prototype.buildAddThisHtml = function(buttons) {
-        var addThisButtonHtml, addThisButtonsContainer, buttonOrientation, iconSizes, servicesMap;
+        var addThisButtonsContainer, buttonOrientation, iconSizes, servicesMap;
 
         servicesMap = {
           email: {
@@ -151,23 +164,9 @@
           horizontal: 'addThisHorizontal',
           vertical: 'addThisVertical'
         };
-        addThisButtonHtml = function(buttons) {
-          var html, i, len;
-
-          html = '';
-          i = 0;
-          len = buttons.length;
-          while (i < len) {
-            if (buttons[i] in servicesMap) {
-              html += '<a class="#{servicesMap[buttons[i]].className}" title="#{servicesMap[buttons[i]].title}" href="#"></a>';
-              i++;
-            }
-          }
-          return html;
-        };
         addThisButtonsContainer = $('<div>', {
           "class": 'socialShare-addThis ' + buttonOrientation[this.options.addThisButtonOrientation] + ' ' + iconSizes[this.options.addThisButtonSize],
-          html: addThisButtonHtml(buttons)
+          html: addThisButtonHtml(buttons, servicesMap)
         });
         this.addThisButtonsContainer = addThisButtonsContainer;
         return addThisButtonsContainer;
@@ -182,12 +181,12 @@
         });
         wrapInner = $('<div>', {
           "class": 'socialShare-inner',
-          width: this.$el.width()
+          width: this.el.width()
         });
         posConst = {
           cssTop: parseInt(buttons.css('top'), 10),
-          offTop: parseInt(this.$el.offset().top, 10),
-          contentHeight: parseInt(this.$el.outerHeight(), 10)
+          offTop: parseInt(this.el.offset().top, 10),
+          contentHeight: parseInt(this.el.outerHeight(), 10)
         };
         self = this;
         win = $(window);
@@ -202,7 +201,8 @@
           later = function() {
             previous = new Date();
             timeout = null;
-            return result = func.apply(context, args);
+            result = func.apply(context, args);
+            return result;
           };
           return function() {
             var now, remaining;
@@ -231,7 +231,7 @@
           if (self.addThisButtonFollowLimit === null) {
             self.addThisButtonFollowLimit = posConst.contentHeight + posConst.offTop - posConst.cssTop - self.addThisButtonsContainerHeight;
           }
-          return setLimit = function() {};
+          setLimit = function() {};
         };
         updatePosition = function() {
           var adjustCss;

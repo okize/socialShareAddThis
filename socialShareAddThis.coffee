@@ -36,12 +36,9 @@
 
     # plugin constructor
     constructor: (@element, options) ->
-      @element = element
-      @$el = $(@element) # featured Share component dom container
+      @el = $(@element) # featured Share component dom container
       @doc = $(window.document)
       @options = $.extend({}, defaults, options)
-      @_defaults = defaults
-      @_name = pluginName
       @addThisButtonsContainer = {} # will hold reference to jq object of buttons parent div
       @addThisButtonsContainerHeight = null # will hold the height of the buttons, which can't be determined until the buttons have loaded async
       @addThisButtonFollowLimit = null # will hold height of 'limit' where the buttons stop following as page scrolls
@@ -64,51 +61,51 @@
 
     # plugin initializer
     init: ->
-      self = this
 
       # load the addthis script
-      $.when(@loadAddthisScript(@addThisScript)).then ->
+      $.when( @loadAddthisScript( @addThisScript ) ).then =>
 
         # truth in dom
-        self.isAddThisLoaded true
+        @.isAddThisLoaded true
 
         # sets addthis config if it hasn't been already
-        self.setAddThisConfiguration()
+        @.setAddThisConfiguration()
 
         # creates the buttons from options and then inserts them into the dom
-        self.$el.append self.buildAddThisHtml(self.options.addThisButtons)
+        @el.append @.buildAddThisHtml( @.options.addThisButtons )
 
         # displays the buttons after they've been added to the dom
-        self.addThisButtonsContainer.show()
+        @.addThisButtonsContainer.show()
 
         # initialize 'follow' functionality
-        self.initializeFollow()  if self.options.addThisButtonFollow
+        @.initializeFollow() if @.options.addThisButtonFollow
 
     # @todo
     isAddThisLoaded: (bool) ->
 
-      # if argument is passed then function is setter
-      @doc.data 'addThisScriptLoaded', bool  if arguments.length > 0 and typeof bool is 'boolean'
+      # if argument is passed then function is set
+      if arguments.length > 0 and typeof bool is 'boolean'
+        @doc.data 'addThisScriptLoaded', bool
 
       # truth in dom; if data attr hasn't been set yet, set it
       if typeof @doc.data('addThisScriptLoaded') is 'undefined'
         @doc.data 'addThisScriptLoaded', false
         return false
+
       @doc.data 'addThisScriptLoaded'
 
-    # @todo
+    # addthis_config is global to the page so only set it once
     setAddThisConfiguration: ->
 
-      # addthis_config is global to the page so only set it once
-      if @isAddThisReady() is true and typeof window.addthis_config is 'undefined'
+      if typeof window.addthis_config is 'undefined' and @isAddThisReady() is true
         window.addthis_config = @addThisConfiguration
         window.addthis_share = @socialShareAddThisConfiguration
+        return
 
-    # @todo
+    # if cache has been set, return promise from these
+    # else create new jqXHR object and store it in the cache
     loadAddthisScript: (val) ->
 
-      # if cache has been set, return promise form these
-      # else create new jqXHR object and store it in the cache
       promise = @addThisScriptCache[val]
       unless promise
         promise = $.ajax(
@@ -119,22 +116,32 @@
         @addThisScriptCache[val] = promise
       promise
 
-    # @todo
+    # check for global addthis object
+    # doesn't seem to be a public method for getting version loaded
+    # otherwise there should be a check here to compare version loaded is
+    # the same as the version requested in the plugin init
     isAddThisReady: ->
 
-      # check for global addthis object
-      # doesn't seem to be a public method for getting version loaded
-      # otherwise there should be a check here to compare version loaded is
-      # the same as the version requested in the plugin init
       if typeof window.addthis is 'undefined'
         false
       else
         true
 
-    # @todo
+    # creates the html for the buttons that addthis consumes and returns as icons
+    addThisButtonHtml = (buttons, servicesMap) ->
+      html = ''
+      i = 0
+      len = buttons.length
+      while i < len
+        if buttons[i] of servicesMap
+          html += '<a class="#{servicesMap[buttons[i]].className}" title="#{servicesMap[buttons[i]].title}" href="#"></a>'
+          i++
+      html
+
+    # returns
+    # all possible services: http://www.addthis.com/services/list
     buildAddThisHtml: (buttons) ->
 
-      # all possible services: http://www.addthis.com/services/list
       servicesMap =
         email:
           className: 'addthis_button_email'
@@ -160,37 +167,25 @@
           className: 'addthis_button_compact'
           title: 'Share with AddThis Services'
 
-
       # class names for various icon sizes from addthis
       iconSizes =
         small: 'addthis_default_style'
         medium: 'addthis_20x20_style'
         large: 'addthis_32x32_style'
 
-
       # class names for different button orientations
       buttonOrientation =
         horizontal: 'addThisHorizontal'
         vertical: 'addThisVertical'
 
-      # creates the html for the buttons that addthis consumes and returns as icons
-      addThisButtonHtml = (buttons) ->
-        html = ''
-        i = 0
-        len = buttons.length
-
-        while i < len
-          if buttons[i] of servicesMap
-            html += '<a class="#{servicesMap[buttons[i]].className}" title="#{servicesMap[buttons[i]].title}" href="#"></a>'
-            i++
-        html
-
       # div that holds the buttons for addthis services
       addThisButtonsContainer = $('<div>',
         class: 'socialShare-addThis ' + buttonOrientation[@options.addThisButtonOrientation] + ' ' + iconSizes[@options.addThisButtonSize]
-        html: addThisButtonHtml(buttons)
+        html: addThisButtonHtml(buttons, servicesMap)
       )
+
       @addThisButtonsContainer = addThisButtonsContainer
+
       addThisButtonsContainer
 
     # @todo
@@ -201,12 +196,12 @@
       )
       wrapInner = $('<div>',
         class: 'socialShare-inner'
-        width: @$el.width()
+        width: @el.width()
       )
       posConst =
         cssTop: parseInt(buttons.css('top'), 10) # the original 'top' value set in the css
-        offTop: parseInt(@$el.offset().top, 10) # the top of the element that the buttons container would normally be in
-        contentHeight: parseInt(@$el.outerHeight(), 10)
+        offTop: parseInt(@el.offset().top, 10) # the top of the element that the buttons container would normally be in
+        contentHeight: parseInt(@el.outerHeight(), 10)
 
       self = this
       win = $(window)
@@ -223,6 +218,7 @@
           previous = new Date()
           timeout = null
           result = func.apply(context, args)
+          result
         ->
           now = new Date()
           remaining = wait - (now - previous)
@@ -235,7 +231,6 @@
             result = func.apply(context, args)
           else timeout = setTimeout(later, remaining)  unless timeout
           result
-
 
       # sets (caches) a couple of variables that we can't set until
       # this buttons have loaded; unfortunately the AddThis api
@@ -251,6 +246,7 @@
         # self-destruct function
         setLimit = ->
 
+        return
 
       # determines when the buttons will follow and when they'll stay
       updatePosition = ->
@@ -269,7 +265,6 @@
           else
             adjustCss 'fixed', posConst.cssTop
         else adjustCss 'absolute', posConst.cssTop + posConst.offTop  if posConst.offTop - win.scrollTop() > 0
-
 
       # performance improvement by lowering the frequency of scroll events firing
       throttled = throttle(updatePosition, 25)

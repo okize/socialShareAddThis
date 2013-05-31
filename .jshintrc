@@ -1,0 +1,9 @@
+{
+  "browser": true,
+  "jquery": true,
+  "predef": {
+    "exports": true,
+    "require": true,
+    "define": true
+  }
+}
