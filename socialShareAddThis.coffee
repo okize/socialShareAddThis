@@ -257,7 +257,6 @@
           wrapOuter.css position: pos
           buttons.css top: top + 'px'
 
-
         # @todo; this can be improved
         if posConst.offTop - win.scrollTop() <= 0
           if self.addThisButtonFollowLimit <= win.scrollTop()
