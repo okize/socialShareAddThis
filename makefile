@@ -1,7 +1,7 @@
 # Required npm modules: jshint (1.1.x) & uglifyjs (2.2.x)
 
 SCRIPT_NAME = socialShareAddThis
-FILESIZE_MAX = 1000
+FILESIZE_MAX = 2000
 FILESIZE_GZIP = `gzip -c ${SCRIPT_NAME}.min.js | wc -c`
 FILESIZE_PASS = "${FILESIZE_GZIP} bytes  \(^_^)/"
 FILESIZE_FAIL = "${FILESIZE_GZIP} bytes  ^(>_<)^"
@@ -28,6 +28,9 @@ default:
 
 	@echo "* compiling coffeescript..."
 	@coffee -p ${SCRIPT_NAME}.coffee > ${SCRIPT_NAME}.js
+
+	@echo "* linting coffeescript..."
+	@coffeelint ${SCRIPT_NAME}.coffee
 
 	@echo "* linting javascript..."
 	@jshint ${SCRIPT_NAME}.js --show-non-errors

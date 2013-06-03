@@ -22,27 +22,62 @@
 
   # default plugin options
   defaults =
-    addThisProfileID: false # change this to whatever profile id should be used (this is global to the page)
-    addThisApiVersion: '300' # 300, 250, 200, 150
-    addThisButtons: ['email', 'linkedin', 'facebook', 'twitter'] # email, linkedin, facebook, twitter, googleplus, addthis
-    addThisCss: true # set to false to disable addthis styles
-    addThisButtonSize: 'small' # small, medium, large,
-    addThisButtonOrientation: 'horizontal' # horizontal, vertical
-    addThisButtonFollow: false # enable to allow the buttons to 'follow' while scrolling
-    addThisTwitterTemplate: '{{title}} {{url}}' # template for twitter sharing
-    googleAnalyticsID: false # include GA Account Id for tracking
+
+    # change this to whatever profile id should be used
+    # note: this is global to the page
+    addThisProfileID: false
+
+    # 300, 250, 200, 150
+    addThisApiVersion: '300'
+
+    # email, linkedin, facebook, twitter, googleplus, addthis
+    addThisButtons: ['email', 'linkedin', 'facebook', 'twitter']
+
+    # set to false to disable default addthis styles
+    addThisCss: true
+
+    # small, medium, large
+    addThisButtonSize: 'small'
+
+    # horizontal, vertical
+    addThisButtonOrientation: 'horizontal'
+
+    # enable to allow the buttons to 'follow' while scrolling
+    addThisButtonFollow: false
+
+    # template for twitter sharing
+    # twitter is the only service that has a template available
+    addThisTwitterTemplate: '{{title}} {{url}}'
+
+    # include GA Account Id for tracking
+    googleAnalyticsID: false
 
   class Share
 
-    # plugin constructor
+    # manage default option extension & setup configuration for AddThis service
     constructor: (@element, options) ->
-      @el = $(@element) # featured Share component dom container
+
+      # featured Share component dom container
+      @el = $(@element)
       @doc = $(window.document)
       @options = $.extend({}, defaults, options)
-      @addThisButtonsContainer = {} # will hold reference to jq object of buttons parent div
-      @addThisButtonsContainerHeight = null # will hold the height of the buttons, which can't be determined until the buttons have loaded async
-      @addThisButtonFollowLimit = null # will hold height of 'limit' where the buttons stop following as page scrolls
-      @addThisScript = '//s7.addthis.com/js/' + @options.addThisApiVersion + '/addthis_widget.js' # url of addthis script
+
+      # stores reference to jq object of buttons parent div
+      @addThisButtonsContainer = {}
+
+      # stores the height of the buttons,
+      # which can't be determined until the buttons have loaded async
+      @addThisButtonsContainerHeight = null
+
+      # stores height of 'limit' where buttons stop following as page scrolls
+      @addThisButtonFollowLimit = null
+
+      # url of addthis script
+      @addThisScript = '//s7.addthis.com/js/' +
+                       @options.addThisApiVersion +
+                       '/addthis_widget.js'
+
+      # addthis configuration object
       @addThisConfiguration =
         pubid: @options.addThisProfileID
         url: window.location.href
@@ -54,8 +89,11 @@
         data_track_addressbar: false
         data_ga_tracker: @options.googleAnalyticsID
         data_ga_social: true
+
+      # twitter is the only available template
       @socialShareAddThisConfiguration = templates:
         twitter: @options.addThisTwitterTemplate
+
       @addThisScriptCache = {}
       @init()
 
@@ -127,14 +165,15 @@
       else
         true
 
-    # creates the html for the buttons that addthis consumes and returns as icons
+    # creates the html for the links that addthis consumes and returns as icons
     addThisButtonHtml = (buttons, servicesMap) ->
       html = ''
       i = 0
       len = buttons.length
       while i < len
         if buttons[i] of servicesMap
-          html += '<a class="#{servicesMap[buttons[i]].className}" title="#{servicesMap[buttons[i]].title}" href="#"></a>'
+          html += "<a class=\"#{servicesMap[buttons[i]].className}\" \
+                  title=\"#{servicesMap[buttons[i]].title}\" href=\"#\"></a>"
           i++
       html
 
@@ -199,8 +238,13 @@
         width: @el.width()
       )
       posConst =
-        cssTop: parseInt(buttons.css('top'), 10) # the original 'top' value set in the css
-        offTop: parseInt(@el.offset().top, 10) # the top of the element that the buttons container would normally be in
+
+        # the original 'top' value set in the css
+        cssTop: parseInt(buttons.css('top'), 10)
+
+        # the top of the element that the buttons container would normally be in
+        offTop: parseInt(@el.offset().top, 10)
+
         contentHeight: parseInt(@el.outerHeight(), 10)
 
       self = this
@@ -263,14 +307,21 @@
             adjustCss 'absolute', self.addThisButtonFollowLimit + posConst.cssTop
           else
             adjustCss 'fixed', posConst.cssTop
-        else adjustCss 'absolute', posConst.cssTop + posConst.offTop  if posConst.offTop - win.scrollTop() > 0
+        else
+          if posConst.offTop - win.scrollTop() > 0
+            adjustCss 'absolute', posConst.cssTop + posConst.offTop
 
       # performance improvement by lowering the frequency of scroll events firing
       throttled = throttle(updatePosition, 25)
 
       # move buttons to body top in dom, adjust position top,
       # add class to container & wrap divs around buttons container
-      buttons.css(top: posConst.cssTop + posConst.offTop + 'px').prependTo('body').addClass('following').wrap(wrapOuter).wrap wrapInner
+      buttons
+        .css(top: posConst.cssTop + posConst.offTop + 'px')
+        .prependTo('body')
+        .addClass('following')
+        .wrap(wrapOuter)
+        .wrap(wrapInner)
 
       # reset wrapOuter to hold jq object of itself
       wrapOuter = $('.socialShare-outer')
